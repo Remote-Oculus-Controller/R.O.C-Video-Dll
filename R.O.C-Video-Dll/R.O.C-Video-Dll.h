@@ -8,11 +8,11 @@
 #endif
 
 #include "resource.h"		// symboles principaux
-
+#include "default.h"
+#include "unityAPI.h"
 
 // CROCVideoDllApp
 // Consultez R.O.C-Video-Dll.cpp pour l'implémentation de cette classe
-//
 
 class CROCVideoDllApp : public CWinApp
 {
@@ -21,7 +21,16 @@ public:
 
 // Substitutions
 public:
-	virtual BOOL InitInstance();
+
+	virtual	BOOL InitInstance();
+
+public:
+
+	unsigned int width;
+	unsigned int height;
+	
+
+private:
 
 	DECLARE_MESSAGE_MAP()
 };

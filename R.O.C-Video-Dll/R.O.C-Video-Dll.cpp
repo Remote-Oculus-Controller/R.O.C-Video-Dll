@@ -43,8 +43,8 @@ END_MESSAGE_MAP()
 
 CROCVideoDllApp::CROCVideoDllApp()
 {
-	// TODO: ajoutez ici du code de construction,
-	// Placez toutes les initialisations significatives dans InitInstance
+	this->height = DEFAULT_WIDTH;
+	this->width  = DEFAULT_HEIGHT;
 }
 
 
@@ -61,3 +61,4 @@ BOOL CROCVideoDllApp::InitInstance()
 
 	return TRUE;
 }
+

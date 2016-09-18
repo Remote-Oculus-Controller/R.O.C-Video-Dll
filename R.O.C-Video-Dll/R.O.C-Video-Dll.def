@@ -4,3 +4,10 @@ LIBRARY
 
 EXPORTS
     ; Les exportations explicites peuvent être placées ici
+	pushAddr
+	setResolution
+	startRTSP
+	stopRTSP
+	getClientStatus
+	setNewVideoFrameCallback
+	setClientStatusChangeCallback
