@@ -5,37 +5,37 @@
 
 extern CROCVideoDllApp theApp;
 
+
 // Push RTSP stream addr
 
 int WINAPI pushAddr(char * addrInput)
 {
+	if (addrInput == NULL)
+		return -1;
+
 	char * addr = _strdup(addrInput);
-	return 0;
+	return theApp.pushAddr(addr);
 }
 
 // Set decoder resolution 
 
-int WINAPI setResolution(unsigned int width, unsigned int height)
+bool WINAPI setResolution(unsigned int width, unsigned int height)
 {
-	if (width == 0 || height == 0)
-		return false;
-	theApp.width  = width;
-	theApp.height = height;
-	return true;
+	return theApp.setResolution(width, height);
 }
 
 // Start all the RTSP streams
 
 int WINAPI startRTSP(bool isTCP)
 {
-	return 0;
+	return theApp.start(isTCP);
 }
 
 // Stop all the RTSP streams
 
 int WINAPI stopRTSP()
 {
-	return 0;
+	return theApp.stop();
 }
 
 // Get the actual state of the client with the id : id
@@ -49,12 +49,12 @@ bool WINAPI getClientStatus(int id)
 
 void WINAPI setNewVideoFrameCallback(NewVideoFrameCallback callback)
 {
-
+	theApp.setNewVideoFrameCallback(callback);
 }
 
 // Set the callback to execute after a client status changes
 
 void WINAPI setClientStatusChangeCallback(ClientStatusChangeCallback callback)
 {
-
+	theApp.setClientStatusChangeCallback(callback);
 }

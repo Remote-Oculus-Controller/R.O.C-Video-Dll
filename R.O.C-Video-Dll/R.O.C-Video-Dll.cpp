@@ -43,8 +43,14 @@ END_MESSAGE_MAP()
 
 CROCVideoDllApp::CROCVideoDllApp()
 {
-	this->height = DEFAULT_WIDTH;
-	this->width  = DEFAULT_HEIGHT;
+	this->_height = DEFAULT_WIDTH;
+	this->_width  = DEFAULT_HEIGHT;
+
+	this->_newVideoFrameCallback		= NULL;
+	this->_clientStatusChangeCallback	= NULL;
+
+	this->thread = NULL;
+	this->_isStarted = false;
 }
 
 
@@ -62,3 +68,95 @@ BOOL CROCVideoDllApp::InitInstance()
 	return TRUE;
 }
 
+
+int CROCVideoDllApp::pushAddr(char * addr)
+{
+	this->_addrs.push_back(addr);
+	return this->_addrs.size() - 1;
+}
+
+bool CROCVideoDllApp::isStarted()
+{
+	return this->_isStarted;
+}
+
+int CROCVideoDllApp::start(bool isTCP)
+{
+	if (_clientStatusChangeCallback == NULL || _newVideoFrameCallback == NULL)
+		return 1;
+	if (this->_isStarted == true)
+		return 1;
+	this->thread = new  Thread<CROCVideoDllApp>(this, &CROCVideoDllApp::print);
+	if (this->thread->start()) {
+		this->_isStarted = true;
+		return 0;
+	}
+	delete this->thread;
+	return 1;
+}
+
+int CROCVideoDllApp::stop()
+{
+	if (this->_isStarted == false)
+		return 1;
+	if (this->thread) {
+		this->thread->join();
+		delete this->thread;
+	}
+	this->_isStarted = false;
+	return 0;
+}
+
+bool CROCVideoDllApp::setResolution(unsigned int width, unsigned int height)
+{
+	if (width == 0 || height == 0)
+		return false;
+	this->_width	= width;
+	this->_height	= height;
+	return true;
+}
+
+void CROCVideoDllApp::setNewVideoFrameCallback(NewVideoFrameCallback callback)
+{
+	this->_newVideoFrameCallback = callback;
+}
+
+NewVideoFrameCallback CROCVideoDllApp::getNewVideoFrameCallback()
+{
+	return this->_newVideoFrameCallback;
+}
+
+void CROCVideoDllApp::setClientStatusChangeCallback(ClientStatusChangeCallback callback)
+{
+	this->_clientStatusChangeCallback = callback;
+}
+
+ClientStatusChangeCallback CROCVideoDllApp::getClientStatusChangeCallback()
+{
+	return this->_clientStatusChangeCallback;
+}
+
+uint8_t * CROCVideoDllApp::generateNewFrame()
+{
+	uint8_t * frame = new uint8_t[_width * _height * 3];
+	memset(frame, 0, _width * _height * 3);
+	for (unsigned int i = 0; i < _width * _height * 3; i += 3) {
+		frame[i] = 255;
+	}
+	return frame;
+}
+
+DWORD CROCVideoDllApp::print()
+{
+	uint8_t * frame;
+	this->_clientStatusChangeCallback(0, true);
+	while (this->_isStarted == true)
+	{
+		frame = generateNewFrame();
+		_newVideoFrameCallback(0, frame, _width, _height);
+		free (frame);
+		Sleep(30);
+	}
+	this->_clientStatusChangeCallback(0, false);
+	return 0;
+}
