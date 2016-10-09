@@ -6,7 +6,7 @@
 extern CROCVideoDllApp theApp;
 
 
-// Push RTSP stream addr
+// Push RTSP url
 
 int WINAPI pushAddr(char * addrInput)
 {

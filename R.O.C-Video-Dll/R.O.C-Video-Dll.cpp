@@ -8,30 +8,6 @@
 #define new DEBUG_NEW
 #endif
 
-//
-//TODO: si cette DLL est liée dynamiquement aux DLL MFC,
-//		toute fonction exportée de cette DLL qui appelle
-//		MFC doit avoir la macro AFX_MANAGE_STATE ajoutée au
-//		tout début de la fonction.
-//
-//		Par exemple :
-//
-//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
-//		{
-//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//			// corps de fonction normal ici
-//		}
-//
-//		Il est très important que cette macro se trouve dans chaque
-//		fonction, avant tout appel à MFC.  Cela signifie qu'elle
-//		doit être la première instruction dans la 
-//		fonction, avant toute déclaration de variable objet
-//		dans la mesure où leurs constructeurs peuvent générer des appels à la DLL
-//		MFC.
-//
-//		Consultez les notes techniques MFC 33 et 58 pour plus de
-//		détails.
-//
 
 // CROCVideoDllApp
 
@@ -43,13 +19,18 @@ END_MESSAGE_MAP()
 
 CROCVideoDllApp::CROCVideoDllApp()
 {
+	// Set the default resolutions.
 	this->_height = DEFAULT_WIDTH;
 	this->_width  = DEFAULT_HEIGHT;
 
+	// Set the default callback value to NULL
 	this->_newVideoFrameCallback		= NULL;
 	this->_clientStatusChangeCallback	= NULL;
 
-	this->thread = NULL;
+	// Set the default Thread , Controller and state value
+	// to NULL , NULL and false
+	this->_thread = NULL;
+	this->_controller = NULL;
 	this->_isStarted = false;
 }
 
@@ -63,100 +44,114 @@ CROCVideoDllApp theApp;
 
 BOOL CROCVideoDllApp::InitInstance()
 {
+	// Basic instance initialisation for DLL object.
 	CWinApp::InitInstance();
-
 	return TRUE;
 }
 
 
 int CROCVideoDllApp::pushAddr(char * addr)
 {
+	// Push the received RTSP url to the vector.
 	this->_addrs.push_back(addr);
+	// Return the ID of the client which adress is : addr
 	return this->_addrs.size() - 1;
 }
 
 bool CROCVideoDllApp::isStarted()
 {
+	// Return the current state of the clients.
 	return this->_isStarted;
 }
 
 int CROCVideoDllApp::start(bool isTCP)
 {
-	if (_clientStatusChangeCallback == NULL || _newVideoFrameCallback == NULL)
+	// Do nothing if any of the callback is not set or if the clients are already running.
+	if (_clientStatusChangeCallback == NULL || _newVideoFrameCallback == NULL || this->_isStarted == true)
 		return 1;
-	if (this->_isStarted == true)
+	
+	// Allocate a new RTSPController to handle the RTSP streams.
+	this->_controller = new RTSPController(this->_width, this->_height, this->_addrs);
+	
+	// If allocation failed exit.
+	if (this->_controller == NULL)
 		return 1;
-	this->thread = new  Thread<CROCVideoDllApp>(this, &CROCVideoDllApp::print);
-	if (this->thread->start()) {
+	
+	// Allocate a new Thread Handler for the asynchronous reception of the RTSP streams.
+	this->_thread = new  Thread<RTSPController>(this->_controller , &RTSPController::run);
+
+	// If allocation failed free _controller and exit.
+	if (this->_thread == NULL)
+	{
+		delete this->_controller;
+		return 1;
+	}
+	
+	// Start the Thread Handler , if no error occured set _isStarted and return.
+	if (this->_thread->start()) 
+	{
 		this->_isStarted = true;
 		return 0;
 	}
-	delete this->thread;
+
+	// Otherwise clear the Thread Handler and the RTSPController then exit.
+	delete this->_thread;
+	delete this->_controller;
+
 	return 1;
 }
 
 int CROCVideoDllApp::stop()
 {
+	// If the clients are not running then exit
 	if (this->_isStarted == false)
 		return 1;
-	if (this->thread) {
-		this->thread->join();
-		delete this->thread;
+
+	// If the thread is running (security check) then wait for it to finish
+	// Then clean any remaining data.
+	if (this->_thread) {
+		this->_thread->join();
+		delete this->_thread;
+		delete this->_controller;
 	}
+	// Set the new state of the clients as not running.
 	this->_isStarted = false;
 	return 0;
 }
 
 bool CROCVideoDllApp::setResolution(unsigned int width, unsigned int height)
 {
+	// If the resolutions are not valid then exit
 	if (width == 0 || height == 0)
 		return false;
+
+	// Otherwise set them and return.
 	this->_width	= width;
 	this->_height	= height;
+
 	return true;
 }
 
 void CROCVideoDllApp::setNewVideoFrameCallback(NewVideoFrameCallback callback)
 {
+	// Set the NewVideoFrameCallback
 	this->_newVideoFrameCallback = callback;
 }
 
 NewVideoFrameCallback CROCVideoDllApp::getNewVideoFrameCallback()
 {
+	// Get the NewVideoFrameCallback
 	return this->_newVideoFrameCallback;
 }
 
 void CROCVideoDllApp::setClientStatusChangeCallback(ClientStatusChangeCallback callback)
 {
+	// Set the ClientStatusChangeCallback
 	this->_clientStatusChangeCallback = callback;
 }
 
 ClientStatusChangeCallback CROCVideoDllApp::getClientStatusChangeCallback()
 {
+	// Get the ClientStatusChangeCallback
 	return this->_clientStatusChangeCallback;
-}
-
-uint8_t * CROCVideoDllApp::generateNewFrame()
-{
-	uint8_t * frame = new uint8_t[_width * _height * 3];
-	memset(frame, 0, _width * _height * 3);
-	for (unsigned int i = 0; i < _width * _height * 3; i += 3) {
-		frame[i] = 255;
-	}
-	return frame;
-}
-
-DWORD CROCVideoDllApp::print()
-{
-	uint8_t * frame;
-	this->_clientStatusChangeCallback(0, true);
-	while (this->_isStarted == true)
-	{
-		frame = generateNewFrame();
-		_newVideoFrameCallback(0, frame, _width, _height);
-		free (frame);
-		Sleep(30);
-	}
-	this->_clientStatusChangeCallback(0, false);
-	return 0;
 }

@@ -27,35 +27,52 @@ public:
 // Substitutions
 public:
 
+	// Performs basic instance initialisation
 	virtual	BOOL InitInstance();
-	virtual int  pushAddr(char * addr);
-	virtual bool setResolution(unsigned int width, unsigned int height);
-	virtual bool isStarted();
-	virtual int start(bool isTCP);
-	virtual int stop();
-	virtual uint8_t * generateNewFrame();
-	DWORD print();
 
-	
+	// Push an RTSP url 
+	virtual int  pushAddr(char * addr);
+
+	// Set the decoder resolution
+	virtual bool setResolution(unsigned int width, unsigned int height);
+
+	// Get the state of the clients
+	virtual bool isStarted();
+
+	// Start the clients using TCP (true) or UDP (false)
+	virtual int start(bool isTCP);
+
+	// Stop the clients
+	virtual int stop();
+
+	// Set / Get the callback called when a new frame is ready
 	virtual void setNewVideoFrameCallback(NewVideoFrameCallback callback);
 	virtual NewVideoFrameCallback getNewVideoFrameCallback();
 
+	// Set / Get the callback called when a client status changes
 	virtual void setClientStatusChangeCallback(ClientStatusChangeCallback callback);
 	virtual ClientStatusChangeCallback getClientStatusChangeCallback();
 
 private:
 
+	// Vector of RTSP url(s)
 	std::vector<char *> _addrs;
+	
+	// State of the Clients
 	bool				_isStarted;
+
+	// Decoder resolution
 	unsigned int		_width;
 	unsigned int		_height;
 
-	RTSPController		_controller;
+	// RTSPController and his Thread Handler
+	RTSPController			*	_controller;
+	Thread<RTSPController>	*	_thread;
 
+	// Callbacks to communicate with unity
 	void(*_newVideoFrameCallback)(int id, uint8_t* data, int width, int height);
 	void(*_clientStatusChangeCallback)(int id, bool status);
 
-	Thread<CROCVideoDllApp> * thread;
 
 	DECLARE_MESSAGE_MAP()
 };

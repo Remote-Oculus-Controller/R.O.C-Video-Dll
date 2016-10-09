@@ -203,14 +203,11 @@
     <ClInclude Include="callback.h" />
     <ClInclude Include="default.h" />
     <ClInclude Include="R.O.C-Video-Dll.h" />
-    <ClInclude Include="Resource.h" />
     <ClInclude Include="ROCThread.h" />
     <ClInclude Include="RTSPController.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="unityAPI.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="R.O.C-Video-Dll.def" />
     <None Include="res\ROCVideoDll.rc2" />
   </ItemGroup>
   <ItemGroup>

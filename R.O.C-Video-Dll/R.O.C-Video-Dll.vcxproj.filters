@@ -35,12 +35,6 @@
     <ClInclude Include="R.O.C-Video-Dll.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="RTSPController.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -58,9 +52,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="R.O.C-Video-Dll.def">
-      <Filter>Fichiers sources</Filter>
-    </None>
     <None Include="res\ROCVideoDll.rc2">
       <Filter>Fichiers de ressources</Filter>
     </None>
