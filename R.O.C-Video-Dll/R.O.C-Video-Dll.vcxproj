@@ -78,6 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Users\Hector\Documents\live64\UsageEnvironment\include;C:\Users\Hector\Documents\live64\liveMedia\include;C:\Users\Hector\Documents\live64\groupsock\include;C:\Users\Hector\Documents\live64\BasicUsageEnvironment\include;C:\Users\Hector\Documents\ffmpeg64\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Hector\Documents\live64\WindowsAudioInputDevice;C:\Users\Hector\Documents\live64\UsageEnvironment;C:\Users\Hector\Documents\live64\testProgs;C:\Users\Hector\Documents\live64\proxyServer;C:\Users\Hector\Documents\live64\mediaServer;C:\Users\Hector\Documents\live64\liveMedia;C:\Users\Hector\Documents\live64\groupsock;C:\Users\Hector\Documents\live64\BasicUsageEnvironment;C:\Users\Hector\Documents\ffmpeg64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -114,12 +116,16 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\R.O.C-Video-Dll.def</ModuleDefinitionFile>
+      <AdditionalDependencies>avcodec.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;libBasicUsageEnvironment.lib;libgroupsock.lib;libliveMedia.lib;libUsageEnvironment.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -164,9 +170,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,6 +197,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="R.O.C-Video-Dll.cpp" />
+    <ClCompile Include="ROCRTSPClient.cpp" />
+    <ClCompile Include="ROCSink.cpp" />
+    <ClCompile Include="RTSPApi.cpp" />
     <ClCompile Include="RTSPController.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -197,14 +207,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StreamClientState.cpp" />
     <ClCompile Include="unityAPI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="callback.h" />
     <ClInclude Include="default.h" />
     <ClInclude Include="R.O.C-Video-Dll.h" />
+    <ClInclude Include="ROCRTSPClient.h" />
+    <ClInclude Include="ROCSink.h" />
     <ClInclude Include="ROCThread.h" />
+    <ClInclude Include="RTSPApi.h" />
     <ClInclude Include="RTSPController.h" />
+    <ClInclude Include="StreamClientState.h" />
     <ClInclude Include="unityAPI.h" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,21 @@
 #include "stdafx.h"
 #include "RTSPController.h"
+#include "RTSPApi.h"
+#include "liveMedia.hh"
+#include "BasicUsageEnvironment.hh"
 
+// FFMPEG
+extern "C" {
+
+#ifdef HAVE_AV_CONFIG_H
+#undef HAVE_AV_CONFIG_H
+#endif
+
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+}
+
+volatile char eventLoopWatchVariable = 0;
 
 // Constructor
 
@@ -22,5 +37,25 @@ RTSPController::~RTSPController()
 // Threaded function to handle clients
 DWORD RTSPController::run()
 {
+	// Begin by setting up our usage environment:
+	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
+	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
 
+	// avcodec init
+	avcodec_register_all();
+	av_register_all();
+
+	//  Open and start streaming each adress 
+	for (int i = 1; i <= this->_addrs.size() - 1 ; ++i) {
+		openURL(*env, NULL , this->_addrs[i]);
+	}
+
+	// All subsequent activity takes place within the event loop
+	env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
+
+	// Cleanup
+	env->reclaim(); 
+	delete scheduler;
+
+	return 0;
 }
