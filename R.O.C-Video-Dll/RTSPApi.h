@@ -5,8 +5,9 @@
 
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
-
 #include "Base64.hh"
+#include "R.O.C-Video-Dll.h"
+
 
 #define RTSP_CLIENT_VERBOSITY_LEVEL 1 // by default, print verbose output from each "RTSPClient"
 
@@ -22,7 +23,7 @@ void streamTimerHandler(void* clientData);
 // called at the end of a stream's expected duration (if the stream has not already signaled its end using a RTCP "BYE")
 
 // The main streaming routine (for each "rtsp://" URL):
-void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL);
+void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL , int id);
 
 // Used to iterate through each stream's 'subsessions', setting up each one:
 void setupNextSubsession(RTSPClient* rtspClient);

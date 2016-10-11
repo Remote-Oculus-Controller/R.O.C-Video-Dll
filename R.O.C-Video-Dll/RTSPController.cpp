@@ -4,6 +4,8 @@
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
 
+extern CROCVideoDllApp theApp;
+
 // FFMPEG
 extern "C" {
 
@@ -46,13 +48,15 @@ DWORD RTSPController::run()
 	av_register_all();
 
 	//  Open and start streaming each adress 
-	for (int i = 1; i <= this->_addrs.size() - 1 ; ++i) {
-		openURL(*env, NULL , this->_addrs[i]);
+	for (int i = 0; i <= this->_addrs.size() - 1 ; ++i) {
+		openURL(*env, NULL , this->_addrs[i] , i);
 	}
 
 	// All subsequent activity takes place within the event loop
 	env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
 
+	theApp.getClientStatusChangeCallback()(-1, false);
+	
 	// Cleanup
 	env->reclaim(); 
 	delete scheduler;

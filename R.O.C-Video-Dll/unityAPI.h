@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <Windows.h>
-#include "R.O.C-Video-Dll.h"
 #include "callback.h"
 
 // Functions called from unity with C# FFI

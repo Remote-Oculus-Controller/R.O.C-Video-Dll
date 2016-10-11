@@ -45,7 +45,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -53,7 +53,7 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -78,16 +78,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Hector\Documents\live64\UsageEnvironment\include;C:\Users\Hector\Documents\live64\liveMedia\include;C:\Users\Hector\Documents\live64\groupsock\include;C:\Users\Hector\Documents\live64\BasicUsageEnvironment\include;C:\Users\Hector\Documents\ffmpeg64\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Hector\Documents\live64\WindowsAudioInputDevice;C:\Users\Hector\Documents\live64\UsageEnvironment;C:\Users\Hector\Documents\live64\testProgs;C:\Users\Hector\Documents\live64\proxyServer;C:\Users\Hector\Documents\live64\mediaServer;C:\Users\Hector\Documents\live64\liveMedia;C:\Users\Hector\Documents\live64\groupsock;C:\Users\Hector\Documents\live64\BasicUsageEnvironment;C:\Users\Hector\Documents\ffmpeg64\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\hecto\Downloads\ffmpeg-x64\include;C:\Users\hecto\Downloads\live-x64-debug\UsageEnvironment\include;C:\Users\hecto\Downloads\live-x64-debug\liveMedia\include;C:\Users\hecto\Downloads\live-x64-debug\groupsock\include;C:\Users\hecto\Downloads\live-x64-debug\BasicUsageEnvironment\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\hecto\Downloads\live-x64-debug\UsageEnvironment;C:\Users\hecto\Downloads\live-x64-debug\liveMedia;C:\Users\hecto\Downloads\live-x64-debug\groupsock;C:\Users\hecto\Downloads\live-x64-debug\BasicUsageEnvironment;C:\Users\hecto\Downloads\ffmpeg-x64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\Hector\Documents\live64\UsageEnvironment\include;C:\Users\Hector\Documents\live64\liveMedia\include;C:\Users\Hector\Documents\live64\groupsock\include;C:\Users\Hector\Documents\live64\BasicUsageEnvironment\include;C:\Users\Hector\Documents\ffmpeg64\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Hector\Documents\live64\UsageEnvironment;C:\Users\Hector\Documents\live64\liveMedia;C:\Users\Hector\Documents\live64\groupsock;C:\Users\Hector\Documents\live64\BasicUsageEnvironment;C:\Users\Hector\Documents\ffmpeg64\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\hecto\Downloads\ffmpeg-x64\include;C:\Users\hecto\Downloads\live-x64-release\UsageEnvironment\include;C:\Users\hecto\Downloads\live-x64-release\liveMedia\include;C:\Users\hecto\Downloads\live-x64-release\groupsock\include;C:\Users\hecto\Downloads\live-x64-release\BasicUsageEnvironment\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\hecto\Downloads\live-x64-release\UsageEnvironment;C:\Users\hecto\Downloads\live-x64-release\liveMedia;C:\Users\hecto\Downloads\live-x64-release\groupsock;C:\Users\hecto\Downloads\live-x64-release\BasicUsageEnvironment;C:\Users\hecto\Downloads\ffmpeg-x64\lib-msvc;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +174,8 @@
       <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

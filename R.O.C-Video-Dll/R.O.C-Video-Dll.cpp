@@ -8,7 +8,6 @@
 #define new DEBUG_NEW
 #endif
 
-
 // CROCVideoDllApp
 
 BEGIN_MESSAGE_MAP(CROCVideoDllApp, CWinApp)
@@ -20,8 +19,8 @@ END_MESSAGE_MAP()
 CROCVideoDllApp::CROCVideoDllApp()
 {
 	// Set the default resolutions.
-	this->_height = DEFAULT_WIDTH;
-	this->_width  = DEFAULT_HEIGHT;
+	this->_height = DEFAULT_HEIGHT;
+	this->_width  = DEFAULT_WIDTH;
 
 	// Set the default callback value to NULL
 	this->_newVideoFrameCallback		= NULL;
@@ -66,6 +65,7 @@ bool CROCVideoDllApp::isStarted()
 
 int CROCVideoDllApp::start(bool isTCP)
 {
+	eventLoopWatchVariable = 0;
 	// Do nothing if any of the callback is not set or if the clients are already running.
 	if (_clientStatusChangeCallback == NULL || _newVideoFrameCallback == NULL || this->_isStarted == true)
 		return 1;
@@ -104,6 +104,7 @@ int CROCVideoDllApp::start(bool isTCP)
 int CROCVideoDllApp::stop()
 {
 	// If the clients are not running then exit
+	eventLoopWatchVariable = 1;
 	if (this->_isStarted == false)
 		return 1;
 
@@ -116,6 +117,7 @@ int CROCVideoDllApp::stop()
 	}
 	// Set the new state of the clients as not running.
 	this->_isStarted = false;
+	this->_addrs.clear();
 	return 0;
 }
 
@@ -130,6 +132,16 @@ bool CROCVideoDllApp::setResolution(unsigned int width, unsigned int height)
 	this->_height	= height;
 
 	return true;
+}
+
+int CROCVideoDllApp::getWidth()
+{
+	return this->_width;
+}
+
+int CROCVideoDllApp::getHeight()
+{
+	return this->_height;
 }
 
 void CROCVideoDllApp::setNewVideoFrameCallback(NewVideoFrameCallback callback)

@@ -10,14 +10,15 @@
 class ROCRTSPClient : public RTSPClient 
 {
 public:
-	static ROCRTSPClient* createNew(UsageEnvironment& env, char const* rtspURL, int verbosityLevel = 0, char const* applicationName = NULL, portNumBits tunnelOverHTTPPortNum = 0);
+	static ROCRTSPClient* createNew(UsageEnvironment& env, char const* rtspURL, int id , int verbosityLevel = 0, char const* applicationName = NULL, portNumBits tunnelOverHTTPPortNum = 0);
 
 protected:
-	ROCRTSPClient(UsageEnvironment& env, char const* rtspURL, int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
+	ROCRTSPClient(UsageEnvironment& env, char const* rtspURL, int id , int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
 	virtual ~ROCRTSPClient();
 
 public:
 	StreamClientState scs;
+	int id;
 };
 
 #endif

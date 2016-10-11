@@ -2,6 +2,8 @@
 
 #include <vector>
 
+extern volatile char eventLoopWatchVariable;
+
 class RTSPController
 {
 public:

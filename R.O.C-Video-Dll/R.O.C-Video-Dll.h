@@ -9,6 +9,7 @@
 
 #include "resource.h"		// symboles principaux
 #include "default.h"
+
 #include "unityAPI.h"
 #include "callback.h"
 #include <vector>
@@ -35,6 +36,9 @@ public:
 
 	// Set the decoder resolution
 	virtual bool setResolution(unsigned int width, unsigned int height);
+
+	virtual int getWidth();
+	virtual int getHeight();
 
 	// Get the state of the clients
 	virtual bool isStarted();

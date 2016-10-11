@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ROCSink.h"
 #include "R.O.C-Video-Dll.h"
+#include <iostream>
 
 extern CROCVideoDllApp theApp;
 
@@ -8,13 +9,13 @@ extern CROCVideoDllApp theApp;
 
 // Even though we're not going to be doing anything with the incoming data, we still need to receive it.
 // Define the size of the buffer that we'll use:
-#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 100000
+#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 1024 * 100
 
-ROCSink* ROCSink::createNew(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId) {
-	return new ROCSink(env, subsession, streamId);
+ROCSink* ROCSink::createNew(UsageEnvironment& env, MediaSubsession& subsession, int id , char const* streamId) {
+	return new ROCSink(env, subsession, id , streamId);
 }
 
-ROCSink::ROCSink(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId)
+ROCSink::ROCSink(UsageEnvironment& env, MediaSubsession& subsession, int id ,char const* streamId)
 	: MediaSink(env),
 	fSubsession(subsession) {
 	fStreamId = strDup(streamId);
@@ -25,6 +26,7 @@ ROCSink::ROCSink(UsageEnvironment& env, MediaSubsession& subsession, char const*
 	fReceiveBufferAV[2] = 0;
 	fReceiveBufferAV[3] = 1;
 
+	this->id = id;
 
 	av_init_packet(&avpkt);
 	avpkt.flags |= AV_PKT_FLAG_KEY;
@@ -41,6 +43,9 @@ ROCSink::ROCSink(UsageEnvironment& env, MediaSubsession& subsession, char const*
 	}
 
 	c = avcodec_alloc_context3(codec);
+
+	// No log
+	av_log_set_level(0);
 	picture = av_frame_alloc();
 
 
@@ -48,8 +53,8 @@ ROCSink::ROCSink(UsageEnvironment& env, MediaSubsession& subsession, char const*
 		c->flags |= CODEC_FLAG_TRUNCATED; // we do not send complete frames
 	}
 
-	c->width = 640;
-	c->height = 360;
+	//c->width = theApp.getWidth();
+	//c->height = theApp.getHeight();
 	c->pix_fmt = AV_PIX_FMT_YUV420P;
 
 	/* for some codecs width and height MUST be initialized there becuase this info is not available in the bitstream */
@@ -163,6 +168,7 @@ void ROCSink::setSprop(u_int8_t const* prop, unsigned size) {
 void ROCSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
 	struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
 	// We've just received a frame of data.  (Optionally) print out information about it:
+//#define DEBUG_PRINT_EACH_RECEIVED_FRAME
 #ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
 	if (fStreamId != NULL) envir() << "Stream \"" << fStreamId << "\"; ";
 	envir() << fSubsession.mediumName() << "/" << fSubsession.codecName() << ":\tReceived " << frameSize << " bytes";
@@ -187,40 +193,42 @@ void ROCSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
 		//	avpkt.size = frameSize;
 		if (avpkt.size != 0) {
 			memcpy(fReceiveBufferAV + 4, fReceiveBuffer, frameSize);
-			avpkt.data = fReceiveBufferAV; //+2;
-										   //		avpkt.data = fReceiveBuffer; //+2;
-			
+			avpkt.data = fReceiveBufferAV; 
 
 			avcodec_send_packet(c, &avpkt);
-
 			if (avcodec_receive_frame(c, picture) == 0) 
 			{
-				AVPicture pict;
+				uint8_t * out = new uint8_t[theApp.getWidth() * theApp.getHeight() * 3];
+				uint8_t * outData[1] = { out }; // RGB have one plane 
+				int outLinesize[1] = { theApp.getWidth() * 3 }; // RGB32 Stride
 
-				//struct SwsContext *sws;
-
-				// Do the actual convertion and scaling
-
-				//
-				//
-				// TODO
-				//
-
+				struct SwsContext *sws;
 				
-				theApp.getNewVideoFrameCallback()(0, NULL, 0, 0);
 
-				/*
-				char fname[256]={0};
-				sprintf(fname, "OriginalYUV%d.pgm",frame);
-				pgm_save (
-				picture->data[0],
-				picture->linesize[0],
-				c->width,
-				c->height,
-				fname
-				);
-				*/
-				//sws_freeContext(sws);
+				sws = sws_getContext(picture->width,
+					picture->height,
+					AV_PIX_FMT_YUV420P,
+					theApp.getWidth(),
+					theApp.getHeight(),
+					AV_PIX_FMT_BGR24,
+					SWS_FAST_BILINEAR,
+					NULL,
+					NULL,
+					NULL);
+			
+				sws_scale(sws,
+					picture->data,
+					picture->linesize,
+					0,
+					c->height,
+					outData,
+					outLinesize);
+
+				theApp.getNewVideoFrameCallback()(this->id, out , theApp.getWidth(), theApp.getHeight());
+				
+
+				delete out;
+				sws_freeContext(sws);
 				frame++;
 			}
 			

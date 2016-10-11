@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "R.O.C-Video-Dll.h"
 #include "unityAPI.h"
 
 // Handler on the DLL application

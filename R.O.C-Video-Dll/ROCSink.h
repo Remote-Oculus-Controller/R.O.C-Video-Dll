@@ -32,14 +32,13 @@ extern "C"
 // Define a data sink (a subclass of "MediaSink") to receive the data for each subsession (i.e., each audio or video 'substream').
 // In practice, this might be a class (or a chain of classes) that decodes and then renders the incoming audio or video.
 // Or it might be a "FileSink", for outputting the received data into a file (as is done by the "openRTSP" application).
-// In this example code, however, we define a simple 'dummy' sink that receives incoming data, but does nothing with it.
 
 class ROCSink : public MediaSink {
 public:
-	static ROCSink* createNew(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId = NULL); // identifies the stream itself (optional)
+	static ROCSink* createNew(UsageEnvironment& env, MediaSubsession& subsession, int id , char const* streamId = NULL); // identifies the stream itself (optional)
 
 private:
-	ROCSink(UsageEnvironment& env, MediaSubsession& subsession, char const* streamId);
+	ROCSink(UsageEnvironment& env, MediaSubsession& subsession, int id , char const* streamId);
 	// called only by "createNew()"
 	virtual ~ROCSink();
 
@@ -75,6 +74,7 @@ private: //FFMPEG
 	uint8_t inbuf[INBUF_SIZE + FF_INPUT_BUFFER_PADDING_SIZE];
 	char buf[1024];
 	AVPacket avpkt;
+	int id;
 };
 
 
