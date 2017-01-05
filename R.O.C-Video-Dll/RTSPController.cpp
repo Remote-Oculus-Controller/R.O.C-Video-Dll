@@ -55,11 +55,12 @@ DWORD RTSPController::run()
 	// All subsequent activity takes place within the event loop
 	env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
 
-	theApp.getClientStatusChangeCallback()(-1, false);
-	
 	// Cleanup
-	env->reclaim(); 
+
 	delete scheduler;
+	env->reclaim(); 
+
+	theApp.getClientStatusChangeCallback()(-1, false);
 
 	return 0;
 }

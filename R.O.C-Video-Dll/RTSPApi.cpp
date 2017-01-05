@@ -12,7 +12,7 @@ extern CROCVideoDllApp theApp;
 void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL , int id) {
 	// Begin by creating a "RTSPClient" object.  Note that there is a separate "RTSPClient" object for each stream that we wish
 	// to receive (even if more than stream uses the same "rtsp://" URL).
-	RTSPClient* rtspClient = ROCRTSPClient::createNew(env, rtspURL, id , RTSP_CLIENT_VERBOSITY_LEVEL, progName);
+	RTSPClient* rtspClient = ROCRTSPClient::createNew(env, rtspURL, id ,  0 /* RTSP_CLIENT_VERBOSITY_LEVEL */ , progName);
 	if (rtspClient == NULL) {
 		env << "Failed to create a RTSP client for URL \"" << rtspURL << "\": " << env.getResultMsg() << "\n";
 		theApp.getClientStatusChangeCallback()(8, false);
@@ -39,7 +39,7 @@ void continueAfterDESCRIBE(RTSPClient * rtspClient, int resultCode, char* result
 
 		if (resultCode != 0) {
 			env << "Failed to get a SDP description: " << resultString << "\n";
-			theApp.getClientStatusChangeCallback()(0, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			delete[] resultString;
 			break;
 		}
@@ -51,12 +51,12 @@ void continueAfterDESCRIBE(RTSPClient * rtspClient, int resultCode, char* result
 		scs.session = MediaSession::createNew(env, sdpDescription);
 		delete[] sdpDescription; // because we don't need it anymore
 		if (scs.session == NULL) {
-			theApp.getClientStatusChangeCallback()(6, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env << "Failed to create a MediaSession object from the SDP description: " << env.getResultMsg() << "\n";
 			break;
 		}
 		else if (!scs.session->hasSubsessions()) {
-			theApp.getClientStatusChangeCallback()(9, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env << "This session has no media subsessions (i.e., no \"m=\" lines)\n";
 			break;
 		}
@@ -75,7 +75,7 @@ void continueAfterDESCRIBE(RTSPClient * rtspClient, int resultCode, char* result
 
 // By default, we request that the server stream its data using RTP/UDP.
 // If, instead, you want to request that the server stream via RTP-over-TCP, change the following to True:
-#define REQUEST_STREAMING_OVER_TCP true
+#define REQUEST_STREAMING_OVER_TCP false
 
 void setupNextSubsession(RTSPClient* rtspClient) {
 	UsageEnvironment& env = rtspClient->envir(); // alias
@@ -84,7 +84,7 @@ void setupNextSubsession(RTSPClient* rtspClient) {
 	scs.subsession = scs.iter->next();
 	if (scs.subsession != NULL) {
 		if (!scs.subsession->initiate()) {
-			theApp.getClientStatusChangeCallback()(5, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env << "Failed to initiate the \"" <<  "\" subsession: " << env.getResultMsg() << "\n";
 			setupNextSubsession(rtspClient); // give up on this subsession; go to the next one
 		}
@@ -114,7 +114,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
 		StreamClientState& scs = ((ROCRTSPClient*)rtspClient)->scs; // alias
 
 		if (resultCode != 0) {
-			theApp.getClientStatusChangeCallback()(4, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env  << "Failed to set up the \""  << "\" subsession: " << resultString << "\n";
 			break;
 		}
@@ -150,7 +150,7 @@ void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultStri
 		scs.subsession->sink = ROCSink::createNew(env, *scs.subsession, ((ROCRTSPClient*)rtspClient)->id , rtspClient->url());
 		// perhaps use your own custom "MediaSink" subclass instead
 		if (scs.subsession->sink == NULL) {
-			theApp.getClientStatusChangeCallback()(3, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env  << "Failed to create a data sink for the \"" << "\" subsession: " << env.getResultMsg() << "\n";
 			break;
 		}
@@ -184,16 +184,19 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
 		StreamClientState& scs = ((ROCRTSPClient*)rtspClient)->scs; // alias
 
 		if (resultCode != 0) {
-			theApp.getClientStatusChangeCallback()(10, false);
+			theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, false);
 			env << "Failed to start playing session: " << resultString << "\n";
 			break;
 		}
 
+		theApp.getClientStatusChangeCallback()(((ROCRTSPClient*)rtspClient)->id, true);
 		// Set a timer to be handled at the end of the stream's expected duration (if the stream does not already signal its end
 		// using a RTCP "BYE").  This is optional.  If, instead, you want to keep the stream active - e.g., so you can later
 		// 'seek' back within it and do another RTSP "PLAY" - then you can omit this code.
 		// (Alternatively, if you don't want to receive the entire stream, you could set this timer for some shorter value.)
 		if (scs.duration > 0) {
+
+			env << "Setting timer";
 			unsigned const delaySlop = 2; // number of seconds extra to delay, after the stream's expected duration.  (This is optional.)
 			scs.duration += delaySlop;
 			unsigned uSecsToDelay = (unsigned)(scs.duration * 1000000);
@@ -207,6 +210,7 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
 		env << "...\n";
 
 		success = True;
+		env << "Everything went ok..." << "\n";
 	} while (0);
 	delete[] resultString;
 
@@ -264,6 +268,7 @@ void shutdownStream(RTSPClient* rtspClient, int exitCode) {
 	UsageEnvironment& env = rtspClient->envir(); // alias
 	StreamClientState& scs = ((ROCRTSPClient*)rtspClient)->scs; // alias
 
+	env << "Shutdown stream ! ";
 																// First, check whether any subsessions have still to be closed:
 	if (scs.session != NULL) {
 		Boolean someSubsessionsWereActive = False;

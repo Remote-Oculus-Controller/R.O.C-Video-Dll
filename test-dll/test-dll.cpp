@@ -12,26 +12,15 @@
 using namespace std::chrono;
 unsigned int frames;
 
-high_resolution_clock::time_point start;
 
 void videoFrameCallback(int id, uint8_t * data, int width, int height)
 {
-	//std::cout << "ID : " << id << std::endl;
-	if (id != 0)
-	{
-	//	std::cout << "Not from ID 0 , throwing..." << std::endl;
-		return;
-	}
 
-	frames++;
-	high_resolution_clock::time_point t2 = high_resolution_clock::now();
-	duration<double> time_span = duration_cast<duration<double>>(t2 - start);
-
-	//std::cout << "Average Presentation time : " << time_span.count() << std::endl;
-
-	cv::Mat image(cv::Size(width, height), CV_8UC3, data, cv::Mat::AUTO_STEP);
-	cv::imshow("Display window", image); // Show our image inside it.
-	start = high_resolution_clock::now();
+	cv::Mat image(cv::Size(width, height), CV_8UC3 , data, cv::Mat::AUTO_STEP);
+	if (id == 0)
+		cv::imshow("Display window 0", image); // Show our image inside it.
+	else
+		cv::imshow("Display window 1", image); // Show our image inside it.
 }
 
 void clientStatusChangeCallback(int id, bool status)
@@ -42,29 +31,58 @@ void clientStatusChangeCallback(int id, bool status)
 
 int main()
 {
-	pushAddr("rtsp://192.168.1.89:5554/playlist.m3u");
-	//pushAddr("rtsp://192.168.1.89:5554/playlist.m3u");
-	setResolution(640, 480);
-	setNewVideoFrameCallback(videoFrameCallback);
-	setClientStatusChangeCallback(clientStatusChangeCallback);
+	cv::namedWindow("Display window 0", cv::WINDOW_AUTOSIZE); // Create a window for display.
+	cv::namedWindow("Display window 1", cv::WINDOW_AUTOSIZE); // Create a window for display.
 
-	start = high_resolution_clock::now();
-	frames = 0;
 
-	if (startRTSP(false) == 0)
-		std::cout << "RTSP Started" << std::endl;
-	else
-		std::cout << "Error while starting RTSP" << std::endl;
+	while (1)
+	{
+		std::string adress;
+		std::cout << "Entrez l'adress RTSP 1 : ";
+		std::cin >> adress;
+		std::vector<char> char_array(adress.begin(), adress.end());
+		char_array.push_back(0);
+		pushAddr(&char_array[0]);
 
-	cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE); // Create a window for display.
-	cv::waitKey(0); // Wait for a keystroke in the window
+		adress.clear();
+		adress = "";
 
-	if (stopRTSP() == 0)
-		std::cout << "RTSP stopped" << std::endl;
-	else
-		std::cout << "Error while stopping RTSP" << std::endl;
+		std::cout << "Entrez l'adress RTSP 2 : ";
+		std::cin >> adress;
+		std::vector<char> char_array2(adress.begin(), adress.end());
+		char_array2.push_back(0);
+		pushAddr(&char_array2[0]);
+
+
+		setResolution(640, 480);
+		setNewVideoFrameCallback(videoFrameCallback);
+		setClientStatusChangeCallback(clientStatusChangeCallback);
+
+		frames = 0;
+
+		if (startRTSP(false) == 0)
+			std::cout << "RTSP Started" << std::endl;
+		else
+			std::cout << "Error while starting RTSP" << std::endl;
 	
-	cv::waitKey(0);
+		cv::waitKey(0); // Wait for a keystroke in the window
+
+		if (stopRTSP() == 0)
+			std::cout << "RTSP stopped" << std::endl;
+		else
+			std::cout << "Error while stopping RTSP" << std::endl;
+		
+		char k = 0;
+
+		while (k != 'c' && k != 'q')
+		{
+			std::cout << "Press q to quit , c to start again." << std::endl;
+			std::cin >> k;
+
+			if (k == 'q')
+				exit(0);
+		}
+	}
 
 	return 0;
 }

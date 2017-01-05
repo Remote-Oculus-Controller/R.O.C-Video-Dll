@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "R.O.C-Video-Dll.h"
+#include <iostream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,6 +32,8 @@ CROCVideoDllApp::CROCVideoDllApp()
 	this->_thread = NULL;
 	this->_controller = NULL;
 	this->_isStarted = false;
+
+	std::cout << "DLL LOADED !" << std::endl;
 }
 
 
@@ -66,6 +69,7 @@ bool CROCVideoDllApp::isStarted()
 int CROCVideoDllApp::start(bool isTCP)
 {
 	eventLoopWatchVariable = 0;
+	
 	// Do nothing if any of the callback is not set or if the clients are already running.
 	if (_clientStatusChangeCallback == NULL || _newVideoFrameCallback == NULL || this->_isStarted == true)
 		return 1;

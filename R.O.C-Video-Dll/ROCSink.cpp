@@ -3,13 +3,33 @@
 #include "R.O.C-Video-Dll.h"
 #include <iostream>
 
+
 extern CROCVideoDllApp theApp;
+
+int gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	// Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+	static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+
+	SYSTEMTIME  system_time;
+	FILETIME    file_time;
+	uint64_t    time;
+
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	time = ((uint64_t)file_time.dwLowDateTime);
+	time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+	tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
 
 // Implementation of "ROCSink":
 
 // Even though we're not going to be doing anything with the incoming data, we still need to receive it.
 // Define the size of the buffer that we'll use:
-#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 1024 * 100
+#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 1024 * 1000
 
 ROCSink* ROCSink::createNew(UsageEnvironment& env, MediaSubsession& subsession, int id , char const* streamId) {
 	return new ROCSink(env, subsession, id , streamId);
@@ -166,7 +186,7 @@ void ROCSink::setSprop(u_int8_t const* prop, unsigned size) {
 }
 
 void ROCSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-	struct timeval presentationTime, unsigned /*durationInMicroseconds*/) {
+	struct timeval presentationTime, unsigned durationInMicroseconds) {
 	// We've just received a frame of data.  (Optionally) print out information about it:
 //#define DEBUG_PRINT_EACH_RECEIVED_FRAME
 #ifdef DEBUG_PRINT_EACH_RECEIVED_FRAME
@@ -204,25 +224,31 @@ void ROCSink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
 
 				struct SwsContext *sws;
 				
+				std::cout << "Frame duration is : " << durationInMicroseconds << std::endl;
 
 				sws = sws_getContext(picture->width,
 					picture->height,
 					AV_PIX_FMT_YUV420P,
 					theApp.getWidth(),
 					theApp.getHeight(),
-					AV_PIX_FMT_BGR24,
+					AV_PIX_FMT_RGB24,
 					SWS_FAST_BILINEAR,
 					NULL,
 					NULL,
 					NULL);
 			
+
 				sws_scale(sws,
 					picture->data,
 					picture->linesize,
 					0,
-					c->height,
+					picture->height,
 					outData,
 					outLinesize);
+
+				struct timeval now;
+
+				gettimeofday(&now, NULL);
 
 				theApp.getNewVideoFrameCallback()(this->id, out , theApp.getWidth(), theApp.getHeight());
 				
